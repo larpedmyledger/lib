@@ -967,9 +967,13 @@ function Library:Window(config)
     local name = config.Name or config.name or config.Title or config.title or "UI Library"
     local size = config.Size or config.size or UDim2.new(0, 500, 0, 650)
     
+    -- Detect mobile device
+    local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
+    Library.IsMobile = isMobile
+    
     -- Scale down menu for mobile devices
-    if UIS.TouchEnabled and not UIS.KeyboardEnabled then
-        local scale = 0.7  -- 70% of original size for mobile
+    if isMobile then
+        local scale = 0.75  -- 75% of original size for mobile
         size = UDim2.new(0, size.X.Offset * scale, 0, size.Y.Offset * scale)
     end
     
@@ -1012,6 +1016,12 @@ function Library:Window(config)
         Size = UDim2.new(0, 200, 0, 21),
         Visible = false
     })
+    
+    -- Hide watermark on mobile
+    if isMobile then
+        WatermarkHolder.Visible = false
+        WatermarkHolder.Parent = nil
+    end
     
     local WatermarkOutline = Create("Frame", {
         Parent = WatermarkHolder,
@@ -1103,13 +1113,26 @@ function Library:Window(config)
                 name, Library.Shared.uid, Library.Shared.ping, Library.Shared.fps)
         end
         
-        WatermarkHolder.Visible = Window.WatermarkConfig.enabled
+        -- Don't show watermark on mobile
+        if not isMobile and WatermarkHolder then
+            WatermarkHolder.Visible = Window.WatermarkConfig.enabled
+        end
         
         return Window
     end
     
     -- Keybind list function
     function Window:KeybindList(properties)
+        -- Don't create keybind list on mobile
+        if isMobile then
+            Window.KeybindListConfig = {
+                enabled = false,
+                holder = nil,
+                set_visible = function() end
+            }
+            return Window.KeybindListConfig
+        end
+        
         local cfg = properties or {}
         cfg.enabled = cfg.enabled ~= nil and cfg.enabled or true
         cfg.title = cfg.title or cfg.Title or "Keybinds"
@@ -1766,9 +1789,9 @@ function Library:Window(config)
             BorderSizePixel = 0,
             BackgroundTransparency = 1,
             TextXAlignment = Enum.TextXAlignment.Left,
-            Size = UDim2.new(1, -26, 0, 12),
+            Size = UDim2.new(1, -26, 0, Library.IsMobile and 18 or 12),
             ZIndex = 1,
-            TextSize = 12,
+            TextSize = Library.IsMobile and 16 or 12,
             BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         })
         
@@ -1795,9 +1818,9 @@ function Library:Window(config)
         local icon_inline = Create("TextButton", {
             Parent = object,
             Name = "",
-            Position = UDim2.new(0, -15, 0, 1),
+            Position = UDim2.new(0, Library.IsMobile and -20 or -15, 0, 1),
             BorderColor3 = Color3.fromRGB(19, 19, 19),
-            Size = UDim2.new(0, 10, 0, 10),
+            Size = UDim2.new(0, Library.IsMobile and 14 or 10, 0, Library.IsMobile and 14 or 10),
             BorderSizePixel = 0,
             Text = "", 
             AutoButtonColor = false, 
@@ -2344,7 +2367,7 @@ function Library:Window(config)
             Name = "",
             Position = UDim2.new(0, -15, 0, 2),
             BorderColor3 = Color3.fromRGB(19, 19, 19),
-            Size = UDim2.new(1, -26, 0, 16),
+            Size = UDim2.new(1, -26, 0, Library.IsMobile and 24 or 16),
             BorderSizePixel = 0,
             BackgroundColor3 = Color3.fromRGB(8, 8, 8)
         })
@@ -2359,7 +2382,7 @@ function Library:Window(config)
             TextStrokeTransparency = 0.5,
             Position = UDim2.new(0, 2, 0, 2),
             Size = UDim2.new(1, -4, 1, -4),
-            TextSize = 12,
+            TextSize = Library.IsMobile and 16 or 12,
             BackgroundColor3 = Color3.fromRGB(38, 38, 38)
         })
         Library.ThemeObjects[button] = "Text"
@@ -2898,13 +2921,13 @@ function Library:Window(config)
             BorderColor3 = Color3.fromRGB(0, 0, 0),
             Text = cfg.name or "Slider",
             TextStrokeTransparency = 0.5,
-            Size = UDim2.new(1, -26, 0, 12),
+            Size = UDim2.new(1, -26, 0, Library.IsMobile and 18 or 12),
             BorderSizePixel = 0,
             BackgroundTransparency = 1,
             TextXAlignment = Enum.TextXAlignment.Left,
             AutomaticSize = Enum.AutomaticSize.Y,
             TextYAlignment = Enum.TextYAlignment.Top,
-            TextSize = 12,
+            TextSize = Library.IsMobile and 16 or 12,
             BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         })
         Library.ThemeObjects[object] = "Text"
@@ -2944,7 +2967,7 @@ function Library:Window(config)
             Name = "",
             Position = UDim2.new(0, 0, 0, 1),
             BorderColor3 = Color3.fromRGB(19, 19, 19),
-            Size = UDim2.new(1, -26, 0, 8),
+            Size = UDim2.new(1, -26, 0, Library.IsMobile and 12 or 8),
             BorderSizePixel = 0,
             Text = "",
             AutoButtonColor = false,
