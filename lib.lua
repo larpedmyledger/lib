@@ -27,10 +27,10 @@ Library.CurrentElementOpen = nil
 Library.Notifications = {}
 Library.Sin = 0
 Library.GuiOffset = 36
-Library.ConfigDirectory = "uilib_configs"
+Library.ConfigDirectory = "vernum.lua"
 Library.CurrentConfigName = nil
 Library.AutoloadConfigName = nil
-Library.AutoloadSettingsFile = "uilib_configs/autoload.txt"
+Library.AutoloadSettingsFile = "vernum.lua/autoload.txt"
 
 Library.Theme = {
     Accent = Color3.fromRGB(100, 100, 255),
