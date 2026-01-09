@@ -3092,7 +3092,7 @@ function Library:Window(config)
         end
         
         Connect(UIS.InputChanged, function(input)
-            if cfg.dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            if cfg.dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                 local size_x = (input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X
                 local value = ((cfg.max - cfg.min) * size_x) + cfg.min
                 cfg.set(value)
@@ -3100,13 +3100,19 @@ function Library:Window(config)
         end)
         
         Connect(UIS.InputEnded, function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                 cfg.dragging = false
             end
         end)
         
         slider_inline.MouseButton1Down:Connect(function()
             cfg.dragging = true
+        end)
+        
+        Connect(slider_inline.InputBegan, function(input)
+            if input.UserInputType == Enum.UserInputType.Touch then
+                cfg.dragging = true
+            end
         end)
         
         add.MouseButton1Down:Connect(function()
