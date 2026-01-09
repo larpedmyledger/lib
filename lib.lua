@@ -27,10 +27,10 @@ Library.CurrentElementOpen = nil
 Library.Notifications = {}
 Library.Sin = 0
 Library.GuiOffset = 36
-Library.ConfigDirectory = "vernum.lua"
+Library.ConfigDirectory = "uilib_configs"
 Library.CurrentConfigName = nil
 Library.AutoloadConfigName = nil
-Library.AutoloadSettingsFile = "vernum.lua/autoload.txt"
+Library.AutoloadSettingsFile = "uilib_configs/autoload.txt"
 
 Library.Theme = {
     Accent = Color3.fromRGB(100, 100, 255),
@@ -723,8 +723,18 @@ local function MakeDraggable(frame)
         end
     end)
     
-    Connect(UIS.InputChanged, function(input)
+    Connect(frame.InputChanged, function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+    
+    Connect(UIS.InputChanged, function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.Touch then
             local delta = input.Position - dragStart
             frame.Position = UDim2.new(
                 startPos.X.Scale, startPos.X.Offset + delta.X,
@@ -956,6 +966,13 @@ function Library:Window(config)
     setmetatable(Window, {__index = Library})
     local name = config.Name or config.name or config.Title or config.title or "UI Library"
     local size = config.Size or config.size or UDim2.new(0, 500, 0, 650)
+    
+    -- Scale down menu for mobile devices
+    if UIS.TouchEnabled and not UIS.KeyboardEnabled then
+        local scale = 0.7  -- 70% of original size for mobile
+        size = UDim2.new(0, size.X.Offset * scale, 0, size.Y.Offset * scale)
+    end
+    
     local showPreview = config.Preview or false
     if config.preview ~= nil then showPreview = config.preview end
     
