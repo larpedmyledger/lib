@@ -709,11 +709,30 @@ end
 local function MakeDraggable(frame)
     local dragging, dragStart, startPos
     
+    local function isInteractiveElement(obj)
+        -- Check if the object or its parent is an interactive UI element
+        while obj and obj ~= frame do
+            if obj:IsA("TextButton") or obj:IsA("TextBox") or obj:IsA("ImageButton") then
+                return true
+            end
+            -- Check class names that indicate interactive elements
+            if obj.Name:match("Button") or obj.Name:match("Slider") or obj.Name:match("Dropdown") or obj.Name:match("Input") then
+                return true
+            end
+            obj = obj.Parent
+        end
+        return false
+    end
+    
     Connect(frame.InputBegan, function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
+        -- Only start dragging if not clicking on interactive elements
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            local mouseTarget = Mouse.Target
+            if mouseTarget and not isInteractiveElement(mouseTarget) then
+                dragging = true
+                dragStart = input.Position
+                startPos = frame.Position
+            end
         end
     end)
     
@@ -973,7 +992,7 @@ function Library:Window(config)
     
     -- Scale down menu for mobile devices
     if isMobile then
-        local scale = 0.75  -- 75% of original size for mobile
+        local scale = 0.6  -- 60% of original size for mobile
         size = UDim2.new(0, size.X.Offset * scale, 0, size.Y.Offset * scale)
     end
     
