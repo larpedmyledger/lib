@@ -1834,6 +1834,10 @@ function Library:Window(config)
             SortOrder = Enum.SortOrder.LayoutOrder
         })
         
+        -- Store right_components for inline elements
+        cfg.right_holder = right_components
+        cfg.object = object
+        
         local icon_inline = Create("TextButton", {
             Parent = object,
             Name = "",
@@ -2524,6 +2528,7 @@ function Library:Window(config)
             key = properties.key or properties.Key or Enum.KeyCode.Unknown, 
             mode = properties.mode or properties.Mode or "toggle",
             active = properties.default or properties.Default or false,
+            inline = properties.inline or properties.Inline or nil,
         }
 
         Library.Flags[cfg.flag] = {
@@ -2535,7 +2540,10 @@ function Library:Window(config)
 
         -- Instances
         local right_components
-        if cfg.name then 
+        -- Check if inline with another element
+        if cfg.inline and cfg.inline.right_holder then
+            right_components = cfg.inline.right_holder
+        elseif cfg.name then 
             local object = Create("TextLabel", {
                 Parent = self.holder,
                 Name = "",
@@ -2575,7 +2583,7 @@ function Library:Window(config)
         end
 
         local keybind = Create("TextButton", {
-            Parent = cfg.name and right_components or self.right_holder,
+            Parent = (cfg.inline and cfg.inline.right_holder) or (cfg.name and right_components) or self.right_holder,
             Name = "",
             Font = Enum.Font.Code,
             TextColor3 = Color3.fromRGB(170, 170, 170),
@@ -2854,8 +2862,14 @@ function Library:Window(config)
             task.wait()
             keybind.Text = "..."	
 
-            cfg.binding = Connect(UIS.InputBegan, function(keycode, game_event)  
-                cfg.set(keycode.KeyCode)
+            cfg.binding = Connect(UIS.InputBegan, function(input, game_event)  
+                -- Check if it's a mouse button (UserInputType) or keyboard key (KeyCode)
+                local key = input.UserInputType ~= Enum.UserInputType.Keyboard 
+                    and input.UserInputType ~= Enum.UserInputType.None 
+                    and input.UserInputType 
+                    or input.KeyCode
+                
+                cfg.set(key)
                 
                 if cfg.binding then
                     cfg.binding:Disconnect() 
@@ -3161,7 +3175,8 @@ function Library:Window(config)
             animation = "normal",
             saved_color = nil,
             right_holder = self.right_holder or nil,
-            holder = self.holder or nil
+            holder = self.holder or nil,
+            inline = properties.inline or properties.Inline or nil,
         }
 
         Library.Flags[cfg.flag] = {}
@@ -3175,7 +3190,10 @@ function Library:Window(config)
 
         -- Button Instances
         local right_components 
-        if cfg.name then 
+        -- Check if inline with another element
+        if cfg.inline and cfg.inline.right_holder then
+            right_components = cfg.inline.right_holder
+        elseif cfg.name then 
             local object = Create("TextLabel", {
                 Parent = self.holder,
                 Name = "",
@@ -3214,7 +3232,7 @@ function Library:Window(config)
         end 
 
         local icon_inline = Create("TextButton", {
-            Parent = cfg.name and right_components or self.right_holder,
+            Parent = (cfg.inline and cfg.inline.right_holder) or (cfg.name and right_components) or self.right_holder,
             Name = "",
             Text = "",
             Size = UDim2.new(0, 16, 0, 10),
